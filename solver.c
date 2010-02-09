@@ -1,4 +1,3 @@
-#include <assert.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -309,6 +308,7 @@ int main(int argc, char *argv[])
     int num_options = 0, max_hits = 0;
     for (int r = 0; r < HEIGHT; ++r) {
         for (int c = 0; c < WIDTH; ++c) {
+            if (ss.required[r][c]) continue;
             if (ss.hit_counts[r][c] > max_hits) {
                 max_hits = ss.hit_counts[r][c];
                 num_options = 0;
@@ -326,14 +326,14 @@ int main(int argc, char *argv[])
         /* Print solution count and all possible options: */
         printf("%d %d %d", solutions, max_hits, num_options);
         for (int n = 0; n < num_options; ++n) {
-            printf(" %c%d", 'A' + options[n].r, options[n].c + 1);
+            printf(" %c%d", 'A' + options[n].c, options[n].r + 1);
         }
         printf("\n");
     } else {
         /* Print a random option: */
         srand((unsigned)time(NULL) ^ ((unsigned)getpid() << 16));
         struct Coords coords = options[rand()%num_options];
-        printf("%c%d\n", 'A' + coords.r, coords.c + 1);
+        printf("%c%d\n", 'A' + coords.c, coords.r + 1);
     }
     return EXIT_SUCCESS;
 }
