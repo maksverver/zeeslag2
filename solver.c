@@ -146,7 +146,7 @@ static int place(struct SolverState *ss, int ship, int last_r, int last_c)
 __attribute__((__noreturn__))
 static void fatal(const char *message)
 {
-    printf("ERROR: %s\n", message);
+    printf("%s\n", message);
     exit(EXIT_FAILURE);  /* success because we produced a line of output */
 }
 
