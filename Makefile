@@ -12,7 +12,7 @@ clean:
 distclean: clean
 	rm -f solver server
 
-test:
+test: solver
 	./run-tests.sh < tests/test-competition-2.in | diff - tests/test-competition-2.out
 	./run-tests.sh < tests/hard-cases.in | diff - tests/hard-cases.out
 

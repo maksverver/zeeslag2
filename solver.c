@@ -31,15 +31,6 @@ struct ThreadState {
 static inline int min(int a, int b)  { return a < b ? a : b; }
 static inline int max(int a, int b)  { return a > b ? a : b; }
 
-static void record_hits(int hits[HEIGHT][WIDTH], int r1, int c1, int r2, int c2, int cnt)
-{
-    for (int r = r1; r < r2; ++r) {
-        for (int c = c1; c < c2; ++c) {
-            hits[r][c] += cnt;
-        }
-    }
-}
-
 static inline bool check_counts(int *counts, int size, int a, int b)
 {
     for (int i = a; i < b; ++i) {
@@ -84,8 +75,10 @@ static int place(struct SolverState *ss, int ship, int last_r, int last_c)
                     for (int c = c1; c < c2; ++c) if (ss->required[r][c]++) --ss->required_left;
 
                     const int cnt = place(ss, ship + 1, r, bc2);
-                    if (cnt > 0) record_hits(ss->hit_counts, r, c1, r + 1, c2, cnt);
-                    res += cnt;
+                    if (cnt > 0) {
+                        for (int c = c1; c < c2; ++c) ss->hit_counts[r][c] += cnt;
+                        res += cnt;
+                    }
 
                     for (int c = c1; c < c2; ++c) if (--ss->required[r][c]) ++ss->required_left;
                     if (r - 1 >= 0)     for (int c = bc1; c < bc2; ++c) --ss->blocked[r - 1][c];
@@ -124,8 +117,10 @@ static int place(struct SolverState *ss, int ship, int last_r, int last_c)
                     for (int r = r1; r < r2; ++r) if (ss->required[r][c]++) --ss->required_left;
 
                     const int cnt = place(ss, ship + 1, r1, min(c + 2, WIDTH));
-                    if (cnt > 0) record_hits(ss->hit_counts, r1, c, r2, c + 1, cnt);
-                    res += cnt;
+                    if (cnt > 0) {
+                        for (int r = r1; r < r2; ++r) ss->hit_counts[r][c] += cnt;
+                        res += cnt;
+                    }
 
                     for (int r = r1; r < r2; ++r) if (--ss->required[r][c]) ++ss->required_left;
                     if (c - 1 >= 0)    for (int r = br1; r < br2; ++r) --ss->blocked[r][c - 1];
@@ -172,8 +167,13 @@ static void *place_first_thread(void *arg)
                 if (ss->required[r][c]++) --ss->required_left;
             }
         }
-        cnt += place(ss, 1, r1, bc2);
-        if (cnt > 0) record_hits(ss->hit_counts, r1, c1, r2, c2, cnt);
+        if ((cnt = place(ss, 1, r1, bc2)) > 0) {
+            for (int r = r1; r < r2; ++r) {
+                for (int c = c1; c < c2; ++c) {
+                    ss->hit_counts[r][c] += cnt;
+                }
+            }
+        }
         for (int r = r1; r < r2; ++r) {
             for (int c = c1; c < c2; ++c) {
                 if (--ss->required[r][c]) ++ss->required_left;
